@@ -4,6 +4,7 @@ import com.qdesrame.openapi.diff.model.ChangedOpenApi;
 import com.qdesrame.openapi.diff.output.ConsoleRender;
 import com.qdesrame.openapi.diff.output.HtmlRender;
 import com.qdesrame.openapi.diff.output.MarkdownRender;
+import com.qdesrame.openapi.diff.output.SlackRender;
 import java.io.File;
 import java.io.IOException;
 import org.apache.commons.cli.*;
@@ -79,6 +80,13 @@ public class Main {
             .build());
     options.addOption(
         Option.builder()
+            .longOpt("slack")
+            .hasArg()
+            .argName("file")
+            .desc("export diff as slack's markdown in given file")
+            .build());
+    options.addOption(
+        Option.builder()
             .longOpt("html")
             .hasArg()
             .argName("file")
@@ -145,6 +153,7 @@ public class Main {
       }
       HtmlRender htmlRender = new HtmlRender();
       MarkdownRender mdRender = new MarkdownRender();
+      SlackRender slackRender = new SlackRender();
       String output = null;
       String outputFile = null;
       if (line.hasOption("html")) {
@@ -155,10 +164,16 @@ public class Main {
         output = mdRender.render(result);
         outputFile = line.getOptionValue("markdown");
       }
+      if (line.hasOption("slack")) {
+        output = slackRender.render(result);
+        outputFile = line.getOptionValue("slack");
+      }
       if (line.hasOption("output")) {
         String[] outputValues = line.getOptionValues("output");
         if (outputValues[0].equalsIgnoreCase("markdown")) {
           output = mdRender.render(result);
+        } else if (outputValues[0].equalsIgnoreCase("slack")) {
+          output = slackRender.render(result);
         } else if (outputValues[0].equalsIgnoreCase("html")) {
           output = htmlRender.render(result);
         } else {
